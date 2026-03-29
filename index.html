@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>韓国語学習</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap');
+  :root {
+    --bg:#0f0f13;--surface:#1a1a24;--card:#22222f;--border:#2e2e40;
+    --accent:#ff6b35;--accent2:#ffc857;--text:#f0efe8;--muted:#888899;
+    --correct:#4ade80;--wrong:#f87171;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);color:var(--text);font-family:'Zen Kaku Gothic New',sans-serif;min-height:100vh;overflow-x:hidden;padding-bottom:env(safe-area-inset-bottom);}
+  header{padding:52px 24px 0;text-align:center;}
+  header h1{font-size:1.5rem;font-weight:900;color:var(--accent);}
+  header p{font-size:0.72rem;color:var(--muted);margin-top:2px;}
+  .badge{display:inline-flex;align-items:center;gap:4px;background:#14532d;color:var(--correct);font-size:0.65rem;padding:3px 10px;border-radius:20px;margin-top:6px;}
+  .tabs{display:flex;margin:16px 12px 0;background:var(--surface);border-radius:14px;padding:4px;}
+  .tab-btn{flex:1;background:none;border:none;color:var(--muted);font-family:inherit;font-size:0.72rem;font-weight:700;padding:10px 2px;border-radius:10px;cursor:pointer;transition:all 0.2s;}
+  .tab-btn.active{background:var(--accent);color:white;}
+  .page{display:none;padding:16px 14px 120px;}
+  .page.active{display:block;}
+
+  /* カード */
+  .progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:8px;}
+  .progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.4s;}
+  .progress-text{text-align:center;font-size:0.72rem;color:var(--muted);margin-bottom:14px;}
+  .flashcard-wrap{perspective:1000px;height:230px;margin-bottom:18px;cursor:pointer;}
+  .flashcard-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.5s cubic-bezier(0.4,0,0.2,1);}
+  .flashcard-inner.flipped{transform:rotateY(180deg);}
+  .card-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;border:1px solid var(--border);}
+  .card-front{background:var(--card);}
+  .card-back{background:linear-gradient(135deg,#1f1f2e,#2a1f2e);transform:rotateY(180deg);}
+  .card-label{font-size:0.62rem;color:var(--muted);letter-spacing:0.1em;}
+  .card-ja{font-size:1.5rem;font-weight:900;text-align:center;color:var(--text);line-height:1.4;}
+  .card-kana{font-size:2rem;font-weight:900;text-align:center;color:var(--accent2);line-height:1.4;}
+  .card-hint{font-size:0.68rem;color:var(--muted);margin-top:6px;}
+  .card-nav{display:flex;justify-content:center;align-items:center;gap:24px;margin-bottom:14px;}
+  .nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:1.4rem;width:52px;height:52px;border-radius:50%;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
+  .nav-btn:active{transform:scale(0.9);background:var(--accent);}
+  .nav-btn:disabled{opacity:0.2;cursor:default;}
+  .star-btn{background:none;border:none;font-size:1.6rem;cursor:pointer;padding:4px;}
+  .action-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;}
+  .small-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:inherit;font-size:0.75rem;padding:8px 16px;border-radius:20px;cursor:pointer;}
+  .small-btn.on{background:var(--accent);border-color:var(--accent);color:white;}
+
+  /* クイズ */
+  .quiz-start{text-align:center;padding:40px 0;}
+  .quiz-start h2{font-size:1.2rem;margin-bottom:8px;}
+  .quiz-start p{color:var(--muted);font-size:0.83rem;margin-bottom:24px;line-height:1.7;}
+  .start-btn{background:var(--accent);color:white;border:none;font-family:inherit;font-size:1rem;font-weight:700;padding:14px 36px;border-radius:14px;cursor:pointer;}
+  .qpbar{height:4px;background:var(--border);border-radius:2px;margin-bottom:20px;overflow:hidden;}
+  .qpfill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.4s;}
+  .quiz-q-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 16px;text-align:center;margin-bottom:16px;}
+  .quiz-q-label{font-size:0.62rem;color:var(--muted);letter-spacing:0.1em;margin-bottom:10px;}
+  .quiz-q-text{font-size:1.4rem;font-weight:900;line-height:1.5;}
+  .choices{display:grid;gap:10px;}
+  .choice-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.92rem;padding:15px;border-radius:14px;cursor:pointer;text-align:left;transition:all 0.15s;line-height:1.4;}
+  .choice-btn.correct{background:#14532d;border-color:var(--correct);color:var(--correct);}
+  .choice-btn.wrong{background:#450a0a;border-color:var(--wrong);color:var(--wrong);}
+  .choice-btn:disabled{cursor:default;}
+  .quiz-result{text-align:center;padding:40px 0;}
+  .result-score{font-size:4rem;font-weight:900;color:var(--accent);line-height:1;}
+  .result-label{color:var(--muted);font-size:0.9rem;margin:8px 0 20px;}
+  .result-msg{font-size:1.1rem;margin-bottom:28px;}
+
+  /* 苦手 */
+  .weak-empty{text-align:center;color:var(--muted);padding:60px 0;font-size:0.9rem;line-height:2;}
+  .weak-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+  .wja{font-size:1rem;font-weight:700;}
+  .wkana{font-size:0.85rem;color:var(--accent2);margin-top:3px;}
+  .remove-btn{background:none;border:1px solid var(--border);color:var(--muted);font-size:0.7rem;padding:5px 10px;border-radius:8px;cursor:pointer;white-space:nowrap;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🇰🇷 韓国語 活用練習</h1>
+  <p>日本語 → カナルビで覚える</p>
+  <span class="badge">✓ オフライン対応 348枚</span>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('flash',this)">📇 カード</button>
+  <button class="tab-btn" onclick="switchTab('quiz',this)">🎯 クイズ</button>
+  <button class="tab-btn" onclick="switchTab('weak',this)">⭐ 苦手</button>
+</div>
+
+<div id="flash" class="page active">
+  <div class="action-row">
+    <button class="small-btn on" id="btnAll" onclick="setFilter('all',this)">全部（348）</button>
+    <button class="small-btn" id="btnWeak" onclick="setFilter('weak',this)">⭐ 苦手のみ</button>
+    <button class="small-btn" onclick="shuffleCards()">🔀 シャッフル</button>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="pFill"></div></div>
+  <div class="progress-text" id="pText"></div>
+  <div class="flashcard-wrap" onclick="flipCard()">
+    <div class="flashcard-inner" id="fcInner">
+      <div class="card-face card-front">
+        <div class="card-label">日本語</div>
+        <div class="card-ja" id="cJa"></div>
+        <div class="card-hint">タップしてカナルビを見る ↩</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-label">カナルビ（読み方）</div>
+        <div class="card-kana" id="cKana"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card-nav">
+    <button class="nav-btn" id="prevBtn" onclick="prevCard()">‹</button>
+    <button class="star-btn" id="starBtn" onclick="toggleWeak()">☆</button>
+    <button class="nav-btn" id="nextBtn" onclick="nextCard()">›</button>
+  </div>
+</div>
+
+<div id="quiz" class="page">
+  <div id="qStart" class="quiz-start">
+    <h2>🎯 クイズ</h2>
+    <p>日本語を見てカナルビを選ぼう<br>全10問・4択<br><br><span style="font-size:0.78rem">⭐苦手登録した単語が優先で出ます</span></p>
+    <button class="start-btn" onclick="startQuiz()">スタート</button>
+  </div>
+  <div id="qGame" style="display:none">
+    <div class="qpbar"><div class="qpfill" id="qpFill"></div></div>
+    <div class="quiz-q-box">
+      <div class="quiz-q-label">このカナルビは？</div>
+      <div class="quiz-q-text" id="qJa"></div>
+    </div>
+    <div class="choices" id="choices"></div>
+  </div>
+  <div id="qResult" class="quiz-result" style="display:none">
+    <div class="result-score" id="rScore"></div>
+    <div class="result-label">/ 10問正解</div>
+    <div class="result-msg" id="rMsg"></div>
+    <button class="start-btn" onclick="startQuiz()">もう一度</button>
+  </div>
+</div>
+
+<div id="weak" class="page">
+  <div style="font-size:0.8rem;color:var(--muted);margin-bottom:14px">⭐ カード画面でマークした単語</div>
+  <div id="weakList"></div>
+</div>
+
+<script>
+const D=[{"j":"本を 読む","k":"イクタ"},{"j":"本を 読みます","k":"イルゴよ"},{"j":"本を 読みました","k":"イrゴっそよ"},{"j":"本をこれから読みます","k":"イrグルこえよ"},{"j":"本を 読みたいです","k":"イルゴしっぽよ"},{"j":"本を 読んでいます","k":"イルゴいっそよ"},{"j":"本を読まないといけないです","k":"イルゴや でよ"},{"j":"本を読んでもいいです","k":"イルゴど でよ"},{"j":"歩く","k":"コッタ"},{"j":"歩きます","k":"コロヨ"},{"j":"歩きました","k":"コロッそよ"},{"j":"歩きます(これから)","k":"コルコえよ"},{"j":"歩きたいです","k":"コッコしっぽよ"},{"j":"歩いています","k":"コッコいっそよ"},{"j":"歩かないといけないです","k":"コロヤ でよ"},{"j":"歩いてもいいです","k":"コロド でよ"},{"j":"歩いて 出掛ける","k":"ウェ チュらだ"},{"j":"歩いて 出掛けます","k":"ウェ チュれよ"},{"j":"歩いて 出かけました","k":"ウェ チュれっしよ"},{"j":"歩いてこれから出掛けます","k":"ウェ チュらるこえよ"},{"j":"歩いて 出掛けたいです","k":"ウェ チュらごしっぽよ"},{"j":"歩いて 出掛けています","k":"ウェ チュらごいっそよ"},{"j":"歩いて出掛けないといけないです","k":"ウェ チュレや でよ"},{"j":"歩いて出掛けてもいいです","k":"ウェ チュレど でよ"},{"j":"服を 着る","k":"イpタ"},{"j":"服を 着ます","k":"イポヨ"},{"j":"服を 着ました","k":"イボッそよ"},{"j":"服をこれから着ます","k":"イブrコえよ"},{"j":"服を 着たいです","k":"イpコしっぽよ"},{"j":"服を 着ています","k":"イpコいっそよ"},{"j":"服を着ないといけないです","k":"イボや でよ"},{"j":"服を着てもいいです","k":"イボど でよ"},{"j":"服を 着替える","k":"カライpタ"},{"j":"服を 着替えます","k":"カラいぽよ"},{"j":"服を 着替えました","k":"カライボッそよ"},{"j":"服をこれから着替えます","k":"カライブrこえよ"},{"j":"服を 着替えたいです","k":"カライッコしっぽよ"},{"j":"服を 着替えています","k":"カライッコいっそよ"},{"j":"服を着替えないといけないです","k":"カライぼや でよ"},{"j":"服を着替えてもいいです","k":"カライぼど でよ"},{"j":"布団に 入る","k":"トゥロガダ"},{"j":"布団に入ります","k":"トゥロガよ"},{"j":"布団に入りました","k":"トゥロガっそよ"},{"j":"布団にこれから入ります","k":"トゥロガrこえよ"},{"j":"布団に 入りたいです","k":"トゥロガゴしっぽよ"},{"j":"布団に 入っています","k":"トゥロガゴいっそよ"},{"j":"布団に入らないといけないです","k":"トゥロガや でよ"},{"j":"布団に入ってもいいです","k":"トゥロガど でよ"},{"j":"髪を 洗う","k":"カムた"},{"j":"髪を 洗います","k":"カマよ"},{"j":"髪を 洗いました","k":"かまっそよ"},{"j":"髪をこれから洗います","k":"かむるこえよ"},{"j":"髪を 洗いたいです","k":"カｍコしっぽよ"},{"j":"髪を 洗っています","k":"カｍコいっそよ"},{"j":"髪を洗わないといけないです","k":"カマや でよ"},{"j":"髪を洗ってもいいです","k":"カマど でよ"},{"j":"髪を とかす","k":"ピッタ"},{"j":"髪を とかします","k":"ピソヨ"},{"j":"髪を とかしました","k":"ピソッそよ"},{"j":"髪をこれからとかします","k":"ピスルこえよ"},{"j":"髪を とかしたいです","k":"ピッコしっぽよ"},{"j":"髪を とかしています","k":"ピッコいっそよ"},{"j":"髪をとかさないといけないです","k":"ピソヤ でよ"},{"j":"髪をとかしてもいいです","k":"ピソド でよ"},{"j":"買い出しに 行く","k":"カダ"},{"j":"買い出しに 行きます","k":"カヨ"},{"j":"買い出しに 行きました","k":"カッそよ"},{"j":"買い出しにこれから行きます","k":"カルコエヨ"},{"j":"買い出しに 行きたいです","k":"カゴしっぽよ"},{"j":"買い出しに 行っています","k":"カゴいっそよ"},{"j":"買い出しに行かないといけないです","k":"カヤ でよ"},{"j":"買い出しにいってもいいです","k":"カド でよ"},{"j":"買い出しする","k":"ボダ"},{"j":"買い出しします","k":"パヨ"},{"j":"買い出ししました","k":"パッソヨ"},{"j":"買い出しこれからします","k":"ボルこえよ"},{"j":"買い出し したいです","k":"ボゴしっぽよ"},{"j":"買い出し しています","k":"ボゴいっそよ"},{"j":"買い出ししないといけないです","k":"パヤ でよ"},{"j":"買い出ししてもいいです","k":"パド でよ"},{"j":"電気を つける","k":"キョだ"},{"j":"電気を つけます","k":"キョよ"},{"j":"電気を つけました","k":"キョッそよ"},{"j":"電気をこれからつけます","k":"キョるこえよ"},{"j":"電気を つけたいです","k":"キョゴしっぽよ"},{"j":"電気を つけています","k":"キョゴいっそよ"},{"j":"電気をつけないといけないです","k":"キョやでよ"},{"j":"電気をつけてもいいです","k":"キョどでよ"},{"j":"電気を 消す","k":"クダ"},{"j":"電気を 消します","k":"kuッコよ"},{"j":"電気を 消しました","k":"kuッコっそよ"},{"j":"電気をこれから消します","k":"クrこえよ"},{"j":"電気を 消したいです","k":"クゴしっぽよ"},{"j":"電気を 消しています","k":"クゴいっそよ"},{"j":"電気を消さないといけないです","k":"kuッこやでよ"},{"j":"電気を消してもいいです","k":"kuッこどでよ"},{"j":"朝ごはんを 食べる","k":"もくた"},{"j":"朝ごはんを 食べます","k":"もごよ"},{"j":"朝ごはんを 食べました","k":"モゴォッそよ"},{"j":"朝ごはんをこれから食べます","k":"モグゥルこえよ"},{"j":"朝ごはんを 食べたいです","k":"モッゴしっぽよ"},{"j":"朝ごはんを 食べています","k":"モッゴいっそよ"},{"j":"朝ごはんを食べないといけないです","k":"モゴヤどぅえよ"},{"j":"朝ごはんを食べてもいいです","k":"モゴドどぅえよ"},{"j":"窓を 閉める","k":"タッタ"},{"j":"窓を 閉めます","k":"タダヨ"},{"j":"窓を 閉めました","k":"タダッそよ"},{"j":"窓をこれから閉めます","k":"タベルコえよ"},{"j":"窓を 閉めたいです","k":"タッコしっぽよ"},{"j":"窓を 閉めています","k":"タッコいっそよ"},{"j":"窓を閉めないといけないです","k":"タダや でよ"},{"j":"窓を閉めてもいいです","k":"タダど でよ"},{"j":"窓を 開ける","k":"ヨォrダ"},{"j":"窓を 開けます","k":"ヨロヨ"},{"j":"窓を 開けました","k":"ヨロッそよ"},{"j":"窓をこれから開けます","k":"ヨrコえよ"},{"j":"窓を 開けたいです","k":"ヨルゴしっぽよ"},{"j":"窓を 開けています","k":"ヨルゴいっそよ"},{"j":"窓を開けないといけないです","k":"ヨロや でよ"},{"j":"窓を開けてもいいです","k":"ヨロど でよ"},{"j":"洗濯物を ほす","k":"ノルダ"},{"j":"洗濯物を ほします","k":"ノロヨ"},{"j":"洗濯物を ほしました","k":"ノォロッそよ"},{"j":"洗濯物をこれから干します","k":"ノルこえよ"},{"j":"洗濯物を干したいです","k":"ノルゴしっぽよ"},{"j":"洗濯物を ほしています","k":"ノルゴいっそよ"},{"j":"洗濯物をほさないといけないです","k":"ノロヤ デヨ"},{"j":"洗濯物をほしてもいいです","k":"ノロド デド"},{"j":"洗濯を する","k":"ハダ"},{"j":"洗濯を します","k":"ヘヨ"},{"j":"洗濯を しました","k":"ヘッそよ"},{"j":"洗濯をこれからします","k":"ハェrコえよ"},{"j":"洗濯を したいです","k":"ハゴしっぽよ"},{"j":"洗濯を しています","k":"ハゴいっそよ"},{"j":"洗濯しないといけないです","k":"ヘヤ でよ"},{"j":"洗濯をしてもいいです","k":"ヘド でよ"},{"j":"洗い物を する","k":"ハダ(洗い物)"},{"j":"洗い物を します","k":"へよ(洗い物)"},{"j":"洗い物を しました","k":"ヘッそよ(洗い物)"},{"j":"洗い物をこれからします","k":"ハェルコえよ"},{"j":"洗い物を したいです","k":"ハゴしっぽよ(洗い物)"},{"j":"洗い物を しています","k":"ハゴいっそよ(洗い物)"},{"j":"洗い物をしないといけないです","k":"ヘア でよ"},{"j":"洗い物をしてもいいです","k":"ヘド でよ(洗い物)"},{"j":"手を 洗う","k":"シッタ"},{"j":"手を 洗います","k":"シセルコえよ"},{"j":"手を 洗いました","k":"シソッそよ"},{"j":"手を 洗いたいです","k":"シッコしっぽよ"},{"j":"手を 洗っています","k":"シッコいっそよ"},{"j":"手を 洗わないといけないです","k":"シソヤどぅえよ"},{"j":"手を 洗ってもいいです","k":"シソドどぅえよ"},{"j":"手を ふく","k":"タッター"},{"j":"手を ふきます","k":"タッカヨ"},{"j":"手を ふきました","k":"タッカそよ"},{"j":"手をこれからふきます","k":"タックルコォえよ"},{"j":"手を ふきたいです","k":"タァコしっぽよ"},{"j":"手を ふいています","k":"タァコイっそよ"},{"j":"手をふかないといけないです","k":"タッカヤどぅえよ"},{"j":"手をふいてもいいです","k":"タッカドどぅえよ"},{"j":"車で 出掛ける","k":"ウォチュラダ"},{"j":"車で 出掛けます","k":"ウェチュレヨ"},{"j":"車で 出掛けました","k":"ウォチュレッそよ"},{"j":"車でこれから出掛けます","k":"ウォチュラコえよ"},{"j":"車で 出掛けたいです","k":"チュラゴしっぽよ"},{"j":"車で 出掛けています","k":"チュラゴいっそよ"},{"j":"車で出掛けないといけないです","k":"チュレヤ デヨ"},{"j":"車で出掛けてもいいです","k":"チュレド デヨ"},{"j":"仕事を する","k":"イラダ"},{"j":"仕事を します","k":"イレヨ"},{"j":"仕事を しました","k":"イレッソヨ"},{"j":"仕事をこれからします","k":"ハルコエヨ"},{"j":"仕事 しています","k":"いっそよ"},{"j":"仕事 したいです","k":"しっぽよ"},{"j":"仕事しないといけないです","k":"レヤ でよ"},{"j":"仕事してもいいです","k":"レド でよ"},{"j":"仕事に 行く","k":"ハダ(仕事)"},{"j":"仕事に 行きます","k":"ネヨ"},{"j":"仕事に 行きました","k":"ネっそよ"},{"j":"仕事にこれから行きます","k":"ハルコエヨ(仕事)"},{"j":"仕事に 行きたいです","k":"ハゴしっぽよ(仕事)"},{"j":"仕事に 行っています","k":"ハゴいっそよ(仕事)"},{"j":"仕事に行かないといけないです","k":"ネヤ でよ"},{"j":"仕事に行ってもいいです","k":"ネド でよ"},{"j":"携帯を いじる／さわる","k":"マンジタ"},{"j":"携帯を いじります","k":"マンジョヨ"},{"j":"携帯を いじりました","k":"マンジョッそよ"},{"j":"携帯をこれから触ります","k":"マンジルこえよ"},{"j":"携帯を 触りたいです","k":"マンジュゴしっぽよ"},{"j":"携帯を 触っています","k":"マンジュゴいっそよ"},{"j":"携帯を触らないといけないです","k":"マンジョヤ でよ"},{"j":"携帯を触ってもいいです","k":"マンジョド でよ"},{"j":"顔を 洗う","k":"セスハダ"},{"j":"顔を 洗います","k":"セスへよ"},{"j":"顔を 洗いました","k":"セスヘッソヨ"},{"j":"顔をこれから洗います","k":"セスハェルコエヨ"},{"j":"顔を 洗いたいです","k":"セスハゴしっぽよ"},{"j":"顔を 洗っています","k":"セスハゴいっそよ"},{"j":"顔を 洗わないといけないです","k":"セスヘヤへよ"},{"j":"顔を 洗ってもいいです","k":"セスヘドでよ"},{"j":"はみがきする","k":"ヤンチハダ"},{"j":"はみがきします","k":"ヤンチへよ"},{"j":"はみがき しました","k":"ヤンチヘっそよ"},{"j":"はみがきこれからします","k":"ヤンチハェルコえよ"},{"j":"はみがき したいです","k":"ヤンチハゴしっぽよ"},{"j":"はみがき しています","k":"ヤンチハゴいっそよ"},{"j":"はみがきしないといけないです","k":"ヤンチヘア でよ"},{"j":"はみがきしてもいいです","k":"ヤンチヘヤ でよ"},{"j":"パジャマに 着替える","k":"からいpた"},{"j":"パジャマに 着替えます","k":"カライポヨ"},{"j":"パジャマに 着替えました","k":"カライボっそよ"},{"j":"パジャマにこれから着替えます","k":"カライブrこえよ"},{"j":"パジャマに 着替えたいです","k":"カライpこしっぽよ"},{"j":"パジャマに 着替えています","k":"カライpこいっぽよ"},{"j":"パジャマに着替えないといけないです","k":"カライポや でよ"},{"j":"パジャマに着替えてもいいです","k":"カライポど でよ"},{"j":"トイレに 行く","k":"ファジャンシレカダ"},{"j":"トイレに 行きます","k":"ファジャンシレかよ"},{"j":"トイレに 行きました","k":"ファジャンシレカッそよ"},{"j":"トイレにこれから行きます","k":"ファジャンシレカェルコえよ"},{"j":"トイレに 行きたいです","k":"ファジャンシレカゴしっぽよ"},{"j":"トイレに 行っています","k":"ファジャンシレカゴイッそよ"},{"j":"トイレに行かないといけないです","k":"ファジャンシレカヤどぅえよ"},{"j":"トイレに行ってもいいです","k":"ファジャンシレカドどぅえよ"},{"j":"そうじ する","k":"チョンソハダ"},{"j":"そうじ します","k":"チョンソヘヨ"},{"j":"そうじ しました","k":"チョンソヘッそよ"},{"j":"これからそうじします","k":"チョンソハェルコえよ"},{"j":"そうじ したいです","k":"チョンソハゴしっぽよ"},{"j":"そうじ しています","k":"チョンソハゴいっそよ"},{"j":"そうじしないといけないです","k":"チョンソヘヤ でよ"},{"j":"そうじしてもいいです","k":"チョンソへど でよ"},{"j":"シャンプーとリンスを 使う","k":"すだ"},{"j":"シャンプーとリンスを 使います","k":"っそよ"},{"j":"シャンプーとリンスを 使いました","k":"ソっそよ"},{"j":"シャンプーとリンスをこれから使います","k":"スrこえよ"},{"j":"シャンプーとリンスを 使いたいです","k":"スゴしっぽよ"},{"j":"シャンプーとリンスを 使っています","k":"スゴいっそよ"},{"j":"シャンプーとリンスを使わないといけないです","k":"ッソや でよ"},{"j":"シャンプーとリンスを使ってもいいです","k":"ッソど でよ"},{"j":"シャワー する","k":"シッタ(シャワー)"},{"j":"シャワー します","k":"シソヨ"},{"j":"シャワー しました","k":"シソっそよ"},{"j":"シャワーこれからします","k":"シスルこえよ"},{"j":"シャワー したいです","k":"シッコしっぽよ(シャワー)"},{"j":"シャワー しています","k":"シッコいっそよ(シャワー)"},{"j":"シャワーしないといけないです","k":"シソや でよ"},{"j":"シャワーしてもいいです","k":"シソど でよ"},{"j":"ゴミを 捨てる","k":"ポリダ"},{"j":"ゴミを 捨てます","k":"ポリョヨ"},{"j":"ゴミを 捨てました","k":"ポリョッそよ"},{"j":"ゴミをこれから捨てます","k":"ポリrコえよ"},{"j":"ゴミを 捨てたいです","k":"ポリゴしっぽよ"},{"j":"ゴミを 捨てています","k":"ポリゴいっそよ"},{"j":"ゴミを捨てないといけないです","k":"ポリョや でよ"},{"j":"ゴミを捨ててもいいです","k":"ポリョど でよ"},{"j":"ごはんを 作る","k":"パブハダ"},{"j":"ごはんを 作ります","k":"パブヘヨ"},{"j":"ごはんを 作りました","k":"パブヘッそよ"},{"j":"ごはんをこれから作ります","k":"パブハルこえよ"},{"j":"ごはんを 作りたいです","k":"パブハゴしっぽよ"},{"j":"ごはんを 作っています","k":"パブハゴいっそよ"},{"j":"ごはんを作らないといけないです","k":"パブへや でよ"},{"j":"ごはんを作ってもいいです","k":"パブへど でよ"},{"j":"くつを はく","k":"シンタ"},{"j":"くつを はきます","k":"シノヨ"},{"j":"くつを はきました","k":"シノッそよ"},{"j":"くつをこれから履きます","k":"シネルコえよ"},{"j":"くつを はきたいです","k":"シンコしっぽよ"},{"j":"くつを はいています","k":"シンコいっそよ"},{"j":"くつをはかないといけないです","k":"シノや でよ"},{"j":"くつをはいてもいいです","k":"シノど でよ"},{"j":"くつを ぬぐ","k":"ボッた"},{"j":"くつを ぬぎます","k":"ボソよ"},{"j":"くつを ぬぎました","k":"ボソッそよ"},{"j":"くつをこれからぬぎます","k":"ボスrコえよ"},{"j":"くつを ぬぎたいです","k":"ボッゴしっぽよ"},{"j":"くつを ぬいでいます","k":"ボッゴいっそよ"},{"j":"くつをぬがないといけないです","k":"ボそや でよ"},{"j":"くつをぬいでもいいです","k":"ボそど でよ"},{"j":"かたづける","k":"チゥダ"},{"j":"かたづけます","k":"チウォヨ"},{"j":"かたづけました","k":"チウォッそよ"},{"j":"これからかたづけます","k":"チゥルコえよ"},{"j":"かたづけています","k":"チゥゴいっそよ"},{"j":"かたづけたいです","k":"チゥゴしっぽよ"},{"j":"かたづけないといけないです","k":"チゥォや でよ"},{"j":"かたづけてもいいです","k":"チゥォど でよ"},{"j":"お茶を 飲む","k":"ましだ"},{"j":"お茶を 飲みます","k":"ましょよ"},{"j":"お茶を 飲みました","k":"マショっそよ"},{"j":"お茶をこれから飲みます","k":"マシィルこえよ"},{"j":"お茶を 飲みたいです","k":"マシゴしっぽよ"},{"j":"お茶を 飲んでいます","k":"マシゴいっそよ"},{"j":"お茶を飲まないといけないです","k":"マショや でよ"},{"j":"お茶を飲んでもいいです","k":"マショど でよ"},{"j":"おやつを 食べる","k":"モクタ"},{"j":"おやつを 食べます","k":"モゴヨ"},{"j":"おやつを 食べました","k":"モゴっそよ"},{"j":"おやつをこれから食べます","k":"モグrコえよ"},{"j":"おやつを 食べています","k":"モッコしっぽよ"},{"j":"おやつを 食べたいです","k":"モッコいっそよ"},{"j":"おやつを食べないといけないです","k":"モゴや でよ"},{"j":"おやつを食べてもいいです","k":"モゴど でよ"},{"j":"おふろに 入る","k":"モギョッカダ"},{"j":"おふろに 入ります","k":"モギョッけよ"},{"j":"おふろに 入りました","k":"モギョッケッそよ"},{"j":"おふろにこれから入ります","k":"モギョッカルコえよ"},{"j":"おふろに入りたいです","k":"モギョッカゴしっぽよ"},{"j":"おふろに入っています","k":"モギョッカゴいっそよ"},{"j":"おふろに入らないといけないです","k":"モギョッケや でよ"},{"j":"おふろに入ってもいいです","k":"モギョッケど でよ"},{"j":"おかずを 作る","k":"マンドゥルダ"},{"j":"おかずを 作ります","k":"マンドゥロヨ"},{"j":"おかずを 作りました","k":"マンドゥロッそよ"},{"j":"おかずをこれから作ります","k":"マンドゥルこえよ"},{"j":"おかずを 作りたいです","k":"マンドゥルゴしっぽよ"},{"j":"おかずを 作っています","k":"マンドゥルゴいっそよ"},{"j":"おかずを作らないといけないです","k":"マンドゥロや でよ"},{"j":"おかずを作ってもいいです","k":"マンドゥロど でよ"},{"j":"TVを 見る","k":"ぽだ"},{"j":"TVを 見ます","k":"ぱよ"},{"j":"TVを 見ました","k":"パッそよ"},{"j":"TVをこれから見ます","k":"ポル こえよ"},{"j":"TVを 見たいです","k":"ポゴしっぽよ"},{"j":"TVを 見ています","k":"ポゴいっそよ"},{"j":"TVを見ないといけないです","k":"パヤ でよ"},{"j":"TVを見てもいいです","k":"パド でよ"},{"j":"6時に 起きる","k":"イロナだ"},{"j":"6時に 起きます","k":"イロナよ"},{"j":"6時に 起きました","k":"イロナッそよ"},{"j":"6時にこれから起きます","k":"イロナrコえよ"},{"j":"6時に 起きたいです","k":"イロナゴしっぽよ"},{"j":"6時に 起きています","k":"イロナゴいっそよ"},{"j":"6時に起きないといけないです","k":"イロナヤドゥエヨ"},{"j":"6時に 起きてもいいです","k":"イロナドドゥエヨ"},{"j":"勉強する","k":"コンプハダ"},{"j":"勉強します","k":"コンプヘヨ"},{"j":"勉強しました","k":"コンプヘッソヨ"},{"j":"勉強したいです","k":"コンプハゴしっぽよ"},{"j":"勉強しています","k":"コンプハゴいっそよ"},{"j":"寝る","k":"チャダ"},{"j":"寝ます","k":"チャよ"},{"j":"寝た","k":"チャッそよ"},{"j":"これから寝ます","k":"チャルこえよ"},{"j":"寝たいです","k":"チャゴしっぽよ"},{"j":"寝ています","k":"チャゴいっそよ"},{"j":"寝ないといけないです","k":"チャや でよ"},{"j":"寝てもいいです","k":"チャど でよ"}];
+
+// 苦手
+let W=new Set(JSON.parse(localStorage.getItem('wk')||'[]'));
+function saveW(){localStorage.setItem('wk',JSON.stringify([...W]));}
+
+// カード
+let deck=[...D],idx=0,flipped=false,fmode='all';
+function setFilter(m,btn){
+  fmode=m;
+  document.querySelectorAll('.action-row .small-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  deck=m==='weak'?D.filter(c=>W.has(c.j)):[...D];
+  if(deck.length===0){alert('苦手登録した単語がまだありません。\n☆をタップして登録してください。');setFilter('all',document.getElementById('btnAll'));return;}
+  idx=0;renderCard();
+}
+function shuffleCards(){deck=deck.sort(()=>Math.random()-0.5);idx=0;renderCard();}
+function renderCard(){
+  if(!deck.length)return;
+  const c=deck[idx];
+  document.getElementById('cJa').textContent=c.j;
+  document.getElementById('cKana').textContent=c.k;
+  const pct=((idx+1)/deck.length)*100;
+  document.getElementById('pFill').style.width=pct+'%';
+  document.getElementById('pText').textContent=`${idx+1} / ${deck.length}`;
+  document.getElementById('prevBtn').disabled=idx===0;
+  document.getElementById('nextBtn').disabled=idx===deck.length-1;
+  document.getElementById('fcInner').classList.remove('flipped');
+  flipped=false;
+  document.getElementById('starBtn').textContent=W.has(c.j)?'⭐':'☆';
+}
+function flipCard(){flipped=!flipped;document.getElementById('fcInner').classList.toggle('flipped',flipped);}
+function nextCard(){if(idx<deck.length-1){idx++;renderCard();}}
+function prevCard(){if(idx>0){idx--;renderCard();}}
+function toggleWeak(){
+  const c=deck[idx];
+  W.has(c.j)?W.delete(c.j):W.add(c.j);
+  saveW();renderCard();renderWeakList();
+}
+
+// クイズ
+let qqs=[],qidx=0,qscore=0,qans=false;
+function startQuiz(){
+  const wc=D.filter(c=>W.has(c.j)).sort(()=>Math.random()-0.5).slice(0,5);
+  const nc=D.filter(c=>!W.has(c.j)).sort(()=>Math.random()-0.5).slice(0,10);
+  qqs=[...wc,...nc].sort(()=>Math.random()-0.5).slice(0,10).map(c=>{
+    const wr=D.filter(x=>x.k!==c.k).sort(()=>Math.random()-0.5).slice(0,3).map(x=>x.k);
+    return{...c,choices:[c.k,...wr].sort(()=>Math.random()-0.5)};
+  });
+  qidx=0;qscore=0;
+  document.getElementById('qStart').style.display='none';
+  document.getElementById('qResult').style.display='none';
+  document.getElementById('qGame').style.display='block';
+  renderQ();
+}
+function renderQ(){
+  qans=false;
+  const q=qqs[qidx];
+  document.getElementById('qpFill').style.width=`${(qidx/10)*100}%`;
+  document.getElementById('qJa').textContent=q.j;
+  document.getElementById('choices').innerHTML=q.choices.map(ch=>
+    `<button class="choice-btn" onclick="ansQ(this,'${ch.replace(/'/g,"\\'")}','${q.k.replace(/'/g,"\\'")}')">${ch}</button>`
+  ).join('');
+}
+function ansQ(btn,chosen,correct){
+  if(qans)return;qans=true;
+  document.querySelectorAll('.choice-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct)b.classList.add('correct');
+    else if(b===btn&&chosen!==correct)b.classList.add('wrong');
+  });
+  if(chosen===correct)qscore++;
+  setTimeout(()=>{qidx++;qidx<10?renderQ():showResult();},900);
+}
+function showResult(){
+  document.getElementById('qGame').style.display='none';
+  document.getElementById('qResult').style.display='block';
+  document.getElementById('rScore').textContent=qscore;
+  document.getElementById('rMsg').textContent=['もう一度挑戦！💪','いい調子！😊','素晴らしい！🎉','完璧！🏆'][qscore<=3?0:qscore<=6?1:qscore<=9?2:3];
+}
+
+// 苦手リスト
+function renderWeakList(){
+  const el=document.getElementById('weakList');
+  const list=D.filter(c=>W.has(c.j));
+  if(!list.length){el.innerHTML='<div class="weak-empty">まだ苦手登録した単語がありません<br><br>カード画面の ☆ をタップして<br>苦手な単語を登録しましょう</div>';return;}
+  el.innerHTML=`<div style="font-size:0.78rem;color:var(--muted);margin-bottom:12px">${list.length}件登録中</div>`+
+    list.map(c=>`<div class="weak-card"><div><div class="wja">${c.j}</div><div class="wkana">${c.k}</div></div><button class="remove-btn" onclick="rmW('${c.j.replace(/'/g,"\\'")}')">解除</button></div>`).join('');
+}
+function rmW(ja){W.delete(ja);saveW();renderWeakList();document.getElementById('starBtn').textContent=W.has(deck[idx].j)?'⭐':'☆';}
+
+// タブ
+function switchTab(tab,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  btn.classList.add('active');
+  if(tab==='weak')renderWeakList();
+}
+
+renderCard();
+</script>
+</body>
+</html>
