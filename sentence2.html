@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>韓国語カード</title>
+
+<style>
+body {
+  margin:0;
+  font-family:sans-serif;
+  background:#ffffff;
+  color:#000000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.card {
+  width:90%;
+  max-width:420px;
+  padding:30px;
+  border-radius:20px;
+  background:#f3f4f6;
+  text-align:center;
+  box-shadow:0 10px 20px rgba(0,0,0,0.1);
+}
+
+.jp {
+  font-size:20px;
+  margin-bottom:20px;
+}
+
+.kana {
+  font-size:18px;
+  display:none;
+}
+
+button {
+  margin-top:15px;
+  padding:12px 20px;
+  border:none;
+  border-radius:12px;
+  background:#000;
+  color:#fff;
+  font-size:16px;
+}
+
+.next {
+  background:#22c55e;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <div class="jp" id="jp"></div>
+  <div class="kana" id="kana"></div>
+  <button onclick="toggle()">答え</button>
+  <button class="next" onclick="next()">次へ</button>
+</div>
+
+<script>
+
+const data = [
+
+/* ===== パート1 ===== */
+["今日は朝6時に起きた","オヌル アチム ヨソッシエ イロナッソ"],
+["顔を洗った","セスヘッソ"],
+["朝ごはんを食べた","アチム モゴッソ"],
+["コーヒーを飲んだ","コピルル マショッソ"],
+["仕事に行った","イルハロ カッソ"],
+["カフェで勉強した","カペエソ コンブヘッソ"],
+["今仕事している","チグム イルハゴ イッソ"],
+["ご飯を食べている","パプ モゴ イッソ"],
+["今スマホ見ている","チグム ポン ボゴ イッソ"],
+
+/* ===== パート2 ===== */
+["トイレはどこですか？","ファジャンシレ オディエヨ？"],
+["トイレはどこにありますか？","ファジャンシレ オディエ イッソヨ？"],
+["誕生日はいつですか？","センイル オンジェエヨ？"],
+["いつ韓国に行きますか？","オンジェ ハングゲ カヨ？"],
+["どうやって行きますか？","オットッケ カヨ？"],
+["どうやって食べますか？","オットッケ モゴヨ？"]
+
+];
+
+let i = 0;
+
+function show(){
+  document.getElementById("jp").textContent = data[i][0];
+  document.getElementById("kana").textContent = data[i][1];
+  document.getElementById("kana").style.display = "none";
+}
+
+function toggle(){
+  const k = document.getElementById("kana");
+  k.style.display = k.style.display === "none" ? "block" : "none";
+}
+
+function next(){
+  i = (i + 1) % data.length;
+  show();
+}
+
+show();
+
+</script>
+
+</body>
+</html>
