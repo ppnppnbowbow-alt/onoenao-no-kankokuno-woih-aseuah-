@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>センテンスカード</title>
+
+<style>
+body {
+  margin:0;
+  font-family: -apple-system, BlinkMacSystemFont;
+  background:#0f0f13;
+  color:white;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+}
+
+.card {
+  width:90%;
+  max-width:400px;
+  min-height:200px;
+  background:#1e1e2a;
+  border-radius:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:20px;
+  font-size:1.4rem;
+  font-weight:600;
+  line-height:1.6;
+  transition:0.3s;
+  cursor:pointer;
+}
+
+.kana {
+  color:#ffc857;
+}
+
+.controls {
+  margin-top:20px;
+  display:flex;
+  gap:15px;
+}
+
+button {
+  padding:12px 20px;
+  border:none;
+  border-radius:12px;
+  background:#ff6b35;
+  color:white;
+  font-size:1rem;
+  cursor:pointer;
+}
+
+button:active {
+  transform:scale(0.9);
+}
+</style>
+</head>
+
+<body>
+
+<div class="card" onclick="flip()" id="card"></div>
+
+<div class="controls">
+  <button onclick="prev()">←</button>
+  <button onclick="shuffle()">🔀</button>
+  <button onclick="next()">→</button>
+</div>
+
+<script>
+
+// ===== データここに入れる =====
+const data = [
+["今日は朝6時に起きた","オヌル アチム ヨソッシエ イロナッソ"],
+["コーヒーを飲んだ","コピルル マショッソ"],
+["今仕事に行っている","チグム イルハロ カゴ イッソ"]
+];
+// ↑ここにExcelデータを追加していく
+
+
+let index = 0;
+let flipped = false;
+
+function show(){
+  document.getElementById("card").innerHTML =
+    flipped ? `<span class="kana">${data[index][1]}</span>` : data[index][0];
+}
+
+function flip(){
+  flipped = !flipped;
+  show();
+}
+
+function next(){
+  index = (index + 1) % data.length;
+  flipped = false;
+  show();
+}
+
+function prev(){
+  index = (index - 1 + data.length) % data.length;
+  flipped = false;
+  show();
+}
+
+function shuffle(){
+  data.sort(() => Math.random() - 0.5);
+  index = 0;
+  flipped = false;
+  show();
+}
+
+show();
+
+</script>
+
+</body>
+</html>
